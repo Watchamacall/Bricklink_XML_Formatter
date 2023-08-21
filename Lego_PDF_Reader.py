@@ -46,8 +46,9 @@ def read_brinklink(part_number):
     get_url = url + part_number + "#T=A"
     try:
         browser.get(get_url)
-        content = browser.find_element_by_id("_idItemTableForP")
-        print(content)
+        content = browser.find_element(By.ID, "_idItemTableForP")
+        print(content.get_attribute("innerHTML"))
+        #TODO: Parse through this content.get_attribute and get the Part Colour Code and the Colon showing the number after it
     finally:
         browser.quit()
 
