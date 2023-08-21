@@ -1,1 +1,6 @@
+#Log created by the Engine used
 *.log
+#PDFs that might be in the repo at the time
+*.pdf
+#XML Files created during the development
+*.xml
