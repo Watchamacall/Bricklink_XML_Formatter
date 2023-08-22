@@ -30,7 +30,6 @@ page_down_count = 200
 colour_to_id_global = []
 #endregion
 
-
 #region Functions
 def get_part_details(pdf_path, start_page, end_page):
     with open(pdf_path, 'rb') as pdf_file:
@@ -56,36 +55,7 @@ def get_part_details(pdf_path, start_page, end_page):
                             part_dic[next_section] = section.strip('x')
     return part_dic # Return the dictonary of unique part to quantity
 
-# def read_pdf_pages(pdf_path, start_page, end_page):
-#     with open(pdf_path, 'rb') as pdf_file:
-#         pdf_reader = PyPDF2.PdfReader(pdf_file)
-        
-#         if end_page > len(pdf_reader.pages):
-#             end_page = len(pdf_reader.pages)
-        
-#         part_dic = {}
-
-#         for page_num in range(start_page - 1, end_page):
-#             page = pdf_reader.pages[page_num]
-#             page_text = page.extract_text()
-            
-#             sections = page_text.split('\n')
-
-#             for i, section in enumerate(sections):
-#                 if section.endswith("x"):  # Check if the section contains 'x'
-#                     if i + 1 < len(sections):  # Ensure there's a next section
-#                         next_section = sections[i + 1]
-#                         if not next_section.endswith("x"):
-#                             quant = section.strip('x')
-#                             part_dic[next_section] = quant
-#                             read_brinklink(next_section, quant)
-
-#         build_bricklink_xml(items)
-#         #export_to_spreadsheet(part_dic)
-
 #region Read Bricklink
-
-
 def get_brinklink_item_id_colour(part_dic):
     part_set = []
     for part in part_dic:
