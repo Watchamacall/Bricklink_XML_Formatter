@@ -1,6 +1,6 @@
 #region Import
 import PyPDF2
-import pandas as pd
+#import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import re
-import time
+import os
 #endregion
 
 #region Global Vars
@@ -60,12 +60,14 @@ def get_brinklink_item_id_colour(part_dic):
     part_set = []
     for part in part_dic:
         # Setting up the URL and expected Title of URL
+        print("Getting details on part: " + part)
         full_part_url = part_url + part + "#T=A"
         new_title = expected_title[0] + part + expected_title[1]
 
         item_id_and_colour_id = get_brinklink_item_details(full_part_url, new_title)
         part_set.append(('P', item_id_and_colour_id[0], item_id_and_colour_id[1], part_dic[part]))
     
+    print("Part Details Retrieved")
     return part_set
 
 
@@ -94,6 +96,8 @@ def get_brinklink_item_details(full_url, expected_title):
 
 def cache_colours():
 
+    print("Caching Colours from Bricklink Website")
+
     colour_tab.get(colour_url)
 
     colour_to_id = {}
@@ -121,9 +125,14 @@ def cache_colours():
 
 
         if cur_index.isnumeric() and next_index.isalpha():
+            print("Caching: " + next_index)
             colour_to_id[next_index] = cur_index
     
     colour_tab.quit()
+
+    os.system('cls')
+
+    print("Finished Caching Colours\n\n")
     return colour_to_id
 
 def colour_to_id(colour):
@@ -139,37 +148,13 @@ def colour_to_id(colour):
 
 #endregion
 
-def read_brinklink(part_number, quantity):
-
-    get_part_url = part_url + part_number + "#T=A"
-    part_tab.get(get_part_url)
-
-    wait = WebDriverWait(part_tab, wait_time)
-    new_title = expected_title[0] + part_number + expected_title[1]
-
-    # Wait for new page and element to load
-    wait.until(EC.title_contains(new_title))
-    wait.until(EC.presence_of_element_located((By.ID,"_idItemTableForP")))
-
-    item_overview = part_tab.find_element(By.ID, "_idItemTableForP")
-    item = item_overview.get_attribute("innerHTML")
-    item = BeautifulSoup(item, "html.parser")
-
-    class_elements = item.find_all("span", class_=["pspItemCateAndNo", "pspPCC"])
-
-    part_spec = 'P'
-
-    bricklink_item_number = re.search(r':\s*([^\s]+)', class_elements[0].text).group(1)
-
-    item_set = (part_spec, bricklink_item_number, part_number, quantity)
-    items.append(item_set)
-    print(item_set)
-
-
 def build_bricklink_xml(items):
+    print("Building XML File")
+
     final_file = "<INVENTORY>\n"
 
     for item in items:
+        print("Adding Item: " + item[1])
         item_type = "\t\t<ITEMTYPE>" + item[0] + "</ITEMTYPE>\n"
         item_id = "\t\t<ITEMID>" + item[1] + "</ITEMID>\n"
         colour_type = "\t\t<COLOR>" + item[2] + "</COLOR>\n"
@@ -186,16 +171,30 @@ def build_bricklink_xml(items):
 def save_xml_file(final_file):
     with open("Extracted_Parts.xml", "w") as f:
         f.write(final_file)
+    print("Saved XML as: " + "Extracted_Parts.xml")
     f.close()
 #endregion
-#region Spreadsheet Export
-def export_dict_to_excel(data_dict, output_file):
-    df = pd.DataFrame(data_dict.items(), columns=["Part No", "Quantity"])
-    df.to_excel(output_file, index=False)
 
-def export_to_spreadsheet(part_dic):
-    output_excel = pdf_path + "_spreadsheet.xlsx"
-    export_dict_to_excel(part_dic, output_excel)
+def start_end_pages(error_code = False):
+    if error_code:
+        os.system('cls')
+        print("Sorry, you entered a non-numeric number")
+    start_page = start_page = input("Enter the start page: \n")
+
+    end_page = input("Enter the end page: \n")
+
+    if not start_page.isnumeric() or not end_page.isnumeric():
+        start_page, end_page = start_end_pages(True)
+    
+    return int(start_page), int(end_page)
+#region Spreadsheet Export
+# def export_dict_to_excel(data_dict, output_file):
+#     df = pd.DataFrame(data_dict.items(), columns=["Part No", "Quantity"])
+#     df.to_excel(output_file, index=False)
+
+# def export_to_spreadsheet(part_dic):
+#     output_excel = pdf_path + "_spreadsheet.xlsx"
+#     export_dict_to_excel(part_dic, output_excel)
 #endregion
 
 #endregion
@@ -213,8 +212,7 @@ if __name__ == "__main__":
     pdf_path = pdf_path.replace('"', '')
 
     #Start and End page numbers
-    start_page = int(input("Enter the start page: \n"))
-    end_page = int(input("Enter the end page: \n"))
+    start_page, end_page = start_end_pages()
     
     #Reading the PDF Pages
     #read_pdf_pages(pdf_path, start_page, end_page)
