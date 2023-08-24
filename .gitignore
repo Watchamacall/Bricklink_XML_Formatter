@@ -4,3 +4,5 @@
 *.pdf
 #XML Files created during the development
 *.xml
+
+Lego/*

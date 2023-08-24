@@ -5,7 +5,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.keys import Keys
 from bs4 import BeautifulSoup
 import re
 import os
@@ -24,9 +23,7 @@ part_url = "https://www.bricklink.com/v2/search.page?q="
 colour_url = "https://www.bricklink.com/catalogColors.asp"
 expected_title = ["Search result for ", " - BrickLink Search | BrickLink"]
 wait_time = 60
-unique_lego_number = 7
 
-page_down_count = 200
 
 colour_to_id_global = []
 #endregion
@@ -45,37 +42,10 @@ def get_part_details(pdf_path, start_page, end_page):
                 if section.endswith("x"):  # Check if the current section is a quantity of parts
                     if i + 1 < len(sections):  # Ensure there's a next section
                         next_section = sections[i + 1]
-                        if len(next_section) > unique_lego_number:
-                            next_section = next_section[:unique_lego_number]
 
                         if not next_section.endswith("x"): # Remove any issues with the sections repeating (1x 1x 302364) as an example 
                             part_dic[next_section] = section.strip('x')
     return part_dic # Return the dictonary of unique part to quantity
-
-    # with open(pdf_path, 'rb') as pdf_file:
-    #     pdf_reader = PyPDF2.PdfReader(pdf_file)
-        
-    #     if end_page > len(pdf_reader.pages):
-    #         end_page = len(pdf_reader.pages)
-        
-    #     part_dic = {}
-
-    #     for page_num in range(start_page - 1, end_page):
-    #         page = pdf_reader.pages[page_num]
-    #         page_text = page.extract_text()
-            
-    #         sections = page_text.split('\n')
-
-    #         for i, section in enumerate(sections):
-    #             if section.endswith("x"):  # Check if the current section is a quantity of parts
-    #                 if i + 1 < len(sections):  # Ensure there's a next section
-    #                     next_section = sections[i + 1]
-    #                     if len(next_section) > unique_lego_number:
-    #                         next_section = next_section[:unique_lego_number]
-
-    #                     if not next_section.endswith("x"): # Remove any issues with the sections repeating (1x 1x 302364) as an example 
-    #                         part_dic[next_section] = section.strip('x')
-    # return part_dic # Return the dictonary of unique part to quantity
 
 #region Read Bricklink
 def get_brinklink_item_id_colour(part_dic):
