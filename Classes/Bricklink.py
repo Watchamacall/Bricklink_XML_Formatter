@@ -43,15 +43,15 @@ class Bricklink:
         match browser_type.lower():
             case "firefox":
                 self.browser_options = webdriver.FirefoxOptions()
-                self.browser_options.headless=debug
+                self.browser_options.headless= not debug
                 self.browser = webdriver.Firefox(self.browser_options)
             case "chrome":
                 self.browser_options = webdriver.ChromeOptions()
-                self.browser_options.headless=debug
+                self.browser_options.headless= not debug
                 self.browser = webdriver.Chrome(self.browser_options)
             case "edge":
                 self.browser_options = webdriver.EdgeOptions()
-                self.browser_options.headless=debug
+                self.browser_options.headless= not debug
                 self.browser = webdriver.Edge(self.browser_options)
         
         if cache_colours:

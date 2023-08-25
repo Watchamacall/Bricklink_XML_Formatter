@@ -1,10 +1,14 @@
 #region Custom Classes
-from Bricklink import Bricklink
-from Bricklink_XML_Builder import Bricklink_XML_Builder
-from LEGO_PDF_Part_Extractor import LEGO_PDF_Part_Extractor
+from Classes.Bricklink import Bricklink
+from Classes.Bricklink_XML_Builder import Bricklink_XML_Builder
+from Classes.LEGO_PDF_Part_Extractor import LEGO_PDF_Part_Extractor
+from Classes.Rebrickable import Rebrickable
 #endregion
 
 if __name__ == "__main__":
+
+    rebrickable = Rebrickable()
+    items = rebrickable.get_bricklink_id_and_colour('6132807')
 
     bricklink = Bricklink(debug=True)
     pdf_extractor = LEGO_PDF_Part_Extractor()
