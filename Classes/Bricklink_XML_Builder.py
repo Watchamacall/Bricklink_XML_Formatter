@@ -14,7 +14,7 @@ class Bricklink_XML_Builder:
             quantity = "\t\t<MINQTY>" + part[2] + "</MINQTY>\n"
 
             new_item = "\t<ITEM>\n" + item_type + item_id + colour_type + quantity + "\t</ITEM>\n"
-
+            new_item = new_item.replace('0xc','')
             final_file += new_item
         
         final_file += "</INVENTORY>"

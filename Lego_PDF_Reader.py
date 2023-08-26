@@ -7,10 +7,7 @@ from Classes.Rebrickable import Rebrickable
 
 if __name__ == "__main__":
 
-    rebrickable = Rebrickable()
-    items = rebrickable.get_bricklink_id_and_colour('6132807')
-
-    bricklink = Bricklink(debug=True)
+    bricklink = Bricklink()
     pdf_extractor = LEGO_PDF_Part_Extractor()
 
     pdf_extractor.extract_parts()

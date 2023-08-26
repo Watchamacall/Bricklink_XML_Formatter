@@ -1,7 +1,7 @@
 from pdfminer.high_level import extract_text
 
 class LEGO_PDF_Part_Extractor:
-    def __init__(self, pdf_location='', start_page='', end_page=''):
+    def __init__(self, pdf_location='', start_page='', end_page='', blacklisted_parts=['4654448','6240515','6254100']):
         
         if pdf_location == '':
             self.pdf_location = str(input("Insert the file path to the PDF you wish to extract:\n"))
@@ -16,6 +16,8 @@ class LEGO_PDF_Part_Extractor:
             self.start_page, self.end_page = self.pages_to_extract()
         else:
             self.start_page, self.end_page = start_page, end_page
+
+        self.blacklist = blacklisted_parts
     # Prompts the user to put in the page numbers 
     def pages_to_extract(self):
         start_page = input("Insert the page number that the first page of parts are found on:\n")
@@ -36,7 +38,10 @@ class LEGO_PDF_Part_Extractor:
         self.part_dic = {}
 
         for i, section in enumerate(sections):
-            if section.endswith("x") and i + 1 < len(sections):  # Check if the current section is a quantity of parts
+
+            section = section.replace(' ','')
+            
+            if section.endswith('x') and i + 1 < len(sections):  # Check if the current section is a quantity of parts
                 next_section = sections[i + 1]
 
                 if not next_section.endswith("x"): # Remove any issues with the sections repeating (1x 1x 302364) as an example 
@@ -46,4 +51,10 @@ class LEGO_PDF_Part_Extractor:
                             break
                     if '\x0c' in section:
                         section = section.replace('\x0c', '')
-                    self.part_dic[next_section] = section
+                
+                    can_place = True
+                    for blacklisted in self.blacklist:
+                        if blacklisted in next_section:
+                            can_place = False
+                    if can_place:
+                        self.part_dic[next_section] = section

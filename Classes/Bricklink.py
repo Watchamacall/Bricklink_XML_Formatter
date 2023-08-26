@@ -10,6 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 #OS calls
 import os
 # Regular Expressions
@@ -118,21 +119,32 @@ class Bricklink:
 
             wait = WebDriverWait(self.browser, self.max_wait_time)
 
+            try:
             # Wait for new page and element to load
-            wait.until(EC.title_contains((self.expected_title[0] + part + self.expected_title[1])))
-            item_overview = wait.until(EC.presence_of_element_located((By.ID, self.part_detail_element_id)))
+                wait.until(EC.title_contains((self.expected_title[0] + part + self.expected_title[1])))
+                item_overview = wait.until(EC.presence_of_element_located((By.ID, self.part_detail_element_id)))
 
-            # item_overview = self.browser.find_element(By.ID, "_idItemTableForP")
-            item = item_overview.get_attribute("innerHTML")
-            parsed_item = BeautifulSoup(item, "html.parser")
+                # item_overview = self.browser.find_element(By.ID, "_idItemTableForP")
+                item = item_overview.get_attribute("innerHTML")
+                parsed_item = BeautifulSoup(item, "html.parser")
 
-            source_elements = parsed_item.find_all("span", class_=self.part_detail_classes)
-            item_name = parsed_item.find_all("a", class_=self.part_detail_classes)
+                source_elements = parsed_item.find_all("span", class_=self.part_detail_classes)
+                item_name = parsed_item.find_all("a", class_=self.part_detail_classes)
 
-            print("Getting Detail on " + part + " (" + item_name[0].text + ")")
+                print("Getting Detail on " + part + " (" + item_name[0].text + ")")
+                
+                bricklink_item_id = re.search(r':\s*([^\s]+)', source_elements[0].text).group(1)
+                base_colour = re.search(r'\((.*)\)', source_elements[1].text).group(1)
+                if base_colour == "Green":
+                    print("")
+                base_colour_id = self.colour_to_id(base_colour)
+                self.part_details.append([bricklink_item_id, base_colour_id, part_dic[part]])
+            except TimeoutException:
+                end_result = input("Part " + part + " cannot be found in Bricklink.\n\nEnter Y to continue with getting part details, minus this piece.\n Enter N to end the search for the parts\n")
+
+                if end_result.lower() == 'n':
+                    break
+
+
             
-            bricklink_item_id = re.search(r':\s*([^\s]+)', source_elements[0].text).group(1)
-            base_colour = re.search(r'\((.*)\)', source_elements[1].text).group(1)
-            base_colour_id = self.colour_to_id(base_colour)
-            self.part_details.append([bricklink_item_id, base_colour_id, part_dic[part]])
         
