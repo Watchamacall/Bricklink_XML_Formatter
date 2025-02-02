@@ -11,7 +11,7 @@ class Bricklink_XML_Builder:
             item_type = "\t\t<ITEMTYPE>" + 'P' + "</ITEMTYPE>\n"
             item_id = "\t\t<ITEMID>" + part[0] + "</ITEMID>\n"
             colour_type = "\t\t<COLOR>" + part[1] + "</COLOR>\n"
-            quantity = "\t\t<MINQTY>" + part[2] + "</MINQTY>\n"
+            quantity = "\t\t<MINQTY>" + str(part[2]) + "</MINQTY>\n"
 
             new_item = "\t<ITEM>\n" + item_type + item_id + colour_type + quantity + "\t</ITEM>\n"
             new_item = new_item.replace('0xc','')
@@ -20,7 +20,8 @@ class Bricklink_XML_Builder:
         final_file += "</INVENTORY>"
 
         return final_file
-    # Only saves the XML file based on the inputted dats
+    
+    # Only saves the XML file based on the inputted datas
     def save_xml(final_file, file_name = "Extracted Files"):
         if not file_name.endswith('.xml'):
             file_name += '.xml'

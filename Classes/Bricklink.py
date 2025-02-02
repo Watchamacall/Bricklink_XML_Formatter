@@ -26,7 +26,7 @@ class Bricklink:
         # Defining the URLs
         self.part_url = "https://www.bricklink.com/v2/search.page?q=" # The URL that you search for using the parts (Bricklink URL minus the part number you search for)
         self.colour_url = "https://www.bricklink.com/catalogColors.asp" # The URL that you search for to cache the colours
-
+        self.part_colour_url = "https://www.bricklink.com/v2/catalog/catalogitem.page?P=" #The URL for finding the colours of a specific part
         # Expected Title
         self.expected_title = ["Search result for ", " - BrickLink Search | BrickLink"] # The title that appears when you search using the part_url
 
@@ -36,6 +36,8 @@ class Bricklink:
         # Part Detail Element ID
         self.part_detail_element_id = "_idItemTableForP"
         self.part_detail_classes = ["pspItemCateAndNo", "pspPCC", "pspItemNameLink"]
+
+        self.part_colour_element_class = "pciColorTabListItem"
 
         # Part Set array (0 = Item Type (Part), 1 = Item ID (Unique ID for Bricklink), 2 = Colour (The unique colour Bricklink uses), 3 = Quantity (The number of the parts needed for the set))
         self.part_set = []
@@ -80,7 +82,7 @@ class Bricklink:
         for index in range(len(font_elements)):
 
             if index == 0:
-                cur_index = font_elements[0].replace('&nbsp;','') # Sets the cur_index on inital value increment
+                cur_index = font_elements[0].replace('&nbsp;','') # Sets the cur_index on initial value increment
             else:
                 cur_index = next_index
 
@@ -129,6 +131,7 @@ class Bricklink:
                 parsed_item = BeautifulSoup(item, "html.parser")
 
                 source_elements = parsed_item.find_all("span", class_=self.part_detail_classes)
+                
                 item_name = parsed_item.find_all("a", class_=self.part_detail_classes)
 
                 print("Getting Detail on " + part + " (" + item_name[0].text + ")")
@@ -139,12 +142,63 @@ class Bricklink:
                     print("")
                 base_colour_id = self.colour_to_id(base_colour)
                 self.part_details.append([bricklink_item_id, base_colour_id, part_dic[part]])
+
             except TimeoutException:
                 end_result = input("Part " + part + " cannot be found in Bricklink.\n\nEnter Y to continue with getting part details, minus this piece.\n Enter N to end the search for the parts\n")
 
                 if end_result.lower() == 'n':
                     break
 
+    #Gets the part colours and returns them
+    def get_part_colours(self, part_num):
 
-            
+        colours = []
         
+        self.browser.get(self.part_url + str(part_num))
+
+        wait = WebDriverWait(self.browser,self.max_wait_time)
+
+        try:
+            wait.until(EC.title_contains((self.expected_title[0] + part_num + self.expected_title[1])))
+
+            item_overview = wait.until(EC.presence_of_element_located((By.ID, self.part_detail_element_id)))
+
+            item = item_overview.get_attribute("innerHTML")
+            parsed_item = BeautifulSoup(item, "html.parser")
+
+            source_elements = parsed_item.find_all("span", class_=self.part_detail_classes)
+
+            bricklink_item_id = re.search(r':\s*([^\s]+)', source_elements[0].text).group(1)
+
+            self.browser.get(self.part_colour_url + bricklink_item_id)
+
+            correct_part = input("Enter 'Y' if this is correct, enter 'N' if it is not")
+
+            if correct_part.upper() == 'Y':
+                known_colors_div = wait.until(EC.presence_of_element_located((By.XPATH, "//div[@class='pciColorTitle' and text()='Known Colors:']")))
+
+                # Get the parent td element
+                parent_td = known_colors_div.find_element(By.XPATH, "./ancestor::td[1]")
+
+                colours_html = parent_td.get_attribute("innerHTML")
+                colour_source = BeautifulSoup(colours_html, "html.parser")
+
+                # Find all div elements with style 'display:flex' within the parsed HTML
+                flex_divs = colour_source.find_all("div", style="display:flex;")
+                
+                # Iterate through each flex div to extract the text from the <a> tag
+                for flex_div in flex_divs:
+                    # Find the <a> tag within the current flex div
+                    link = flex_div.find("a")
+                    if link:
+                        link_text = link.text
+                        colours.append(link_text)
+            
+            else:
+                
+
+            return colours, bricklink_item_id
+
+        except TimeoutException:
+            print("Part " + part_num + " cannot be found, please attempt to find the piece and enter the part number correctly. For Example '4476' will not show the correct part, however it does exist in two parts. Entering 4476a will correct this and enter the correct one.\nType 'Exit' to escape this part and find another one \n")
+            return 0, ""
